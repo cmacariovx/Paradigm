@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>Paradigm</title>
+        <meta name="description" content="Elegant, Simple, Accurate.">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="styles.css">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js"></script>
+    </head>
+
+    <body>
+        <div class="homebar">
+
+        </div>
+
+        <div class="rightmain">
+            <div class="mainheader">
+                <h1>PARADIGM</h1>
+            </div>
+
+            <div class="mainbody">
+                <div class="upperbody">
+                    <div class="upperbodyleft">
+                        <div class="upperbodyleft-upper">
+                            <h2 class="exploreWeather">Explore Your Weather</h2>
+                            <input
+                            placeholder="Ex. New York"
+                            class="searchbar"
+                            type="text"
+                            >
+                            <button class="searchbutton">Explore</button>
+                        </div>
+
+                        <div class="upperbodyleft-lower">
+                            <a href="#" class="newYork">New York</a>
+                            <a href="#" class="dubai">Dubai</a>
+                            <a href="#" class="tokyo">Tokyo</a>
+                        </div>
+                    </div>
+
+                    <div class="upperbodyright">
+                        <div class="upperbodyright-left">
+                            <div class="upperbodyright-left-upper">
+                                <h2 class="weatherin">Weather In New York</h2>
+                                <h2 class="intemp"></h2>
+                                <img src="#" class="weatherinicon">
+                            </div>
+
+                            <div class="upperbodyright-left-lower">
+                                <p class="indesc"></p>
+                                <p class="inhumidity"></p>
+                                <p class="inwind"></p>
+                            </div>
+                        </div>
+
+                        <div class="upperbodyright-right">
+                            <div class="chartcontainer">
+                                <canvas id="myChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lowerbody">
+                    <div class="lowerbodyleft">
+                        <div class="lowerbodyleft-upper">
+                            <h2 class="currTime"></h2>
+                            <p class="currDate"></p>
+                        </div>
+
+                        <div class="lowerbodyleft-lower">
+                            <p>Sunrise & Sunset</p>
+                            <p class="sunrise"></p>
+                            <p class="sunset"></p>
+                        </div>
+                    </div>
+
+                    <div class="lowerbodyright">
+                        <div class="lowerbodyright-upper">
+                            <h2 class="forecastname">New York's Forecast</h2>
+                        </div>
+
+                        <div class="lowerbodyright-lower">
+                            <div class="day1">
+                                <img src="#" class="day1icon">
+                                <p class="day1hour"></p>
+                                <p class="day1temp"></p>
+                            </div>
+
+                            <div class="day2">
+                                <img src="#" class="day2icon">
+                                <p class="day2hour"></p>
+                                <p class="day2temp"></p>
+                            </div>
+
+                            <div class="day3">
+                                <img src="#" class="day3icon">
+                                <p class="day3hour"></p>
+                                <p class="day3temp"></p>
+                            </div>
+
+                            <div class="day4">
+                                <img src="#" class="day4icon">
+                                <p class="day4hour"></p>
+                                <p class="day4temp"></p>
+                            </div>
+
+                            <div class="day5">
+                                <img src="#" class="day5icon">
+                                <p class="day5hour"></p>
+                                <p class="day5temp"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+
+    <script>
+
+        window.onload = function() {
+            main.fetchCoords("Asheville");
+            main.displayAsheville();
+        }
+
+        let main = {
+            apiKey: "AIzaSyBd71DPuMIZg8hparl3w2RfPSJLnP5wAZM",
+            fetchCoords: function(city) {
+                fetch(
+                    "https://maps.googleapis.com/maps/api/geocode/json?address="
+                    + city
+                    + "&key="
+                    + this.apiKey
+                    )
+                    .then((response) => response.json())
+                    .then((data) => this.displayCoords(data));
+            },
+            displayCoords: function(data) {
+                let lat = data.results[0].geometry.location.lat;
+                let lng = data.results[0].geometry.location.lng;
+
+                this.fetchWeather(lat, lng);
+            },
+            fetchWeather: function(lat, lng) {
+                fetch(
+                    "https://api.openweathermap.org/data/2.5/onecall?lat="
+                    + lat
+                    + "&lon="
+                    + lng
+                    + "&units=imperial"
+                    +"&appid=134df53d770c5dc5dd6fb16da6f33454"
+                    )
+                    .then((response) => response.json())
+                    .then((data) => this.displayWeather((data)));
+            },
+            displayWeather: function(data) {
+                let currentTemp = data.current.temp;
+                let currentHum = data.current.humidity;
+                let currentWind = data.current.wind_speed;
+                let currentDesc = data.current.weather[0].main;
+                let currentIcon = data.current.weather[0].icon;
+
+                let sunrise = data.current.sunrise;
+                let risedate = new Date(sunrise * 1000);
+                let risehours = ((risedate.getHours() + 11) % 12 + 1);
+                let riseminutes = risedate.getMinutes();
+                let risemin = ('0'+riseminutes).slice(-2);
+                let sunriseTime = risehours + ':' + risemin;
+
+                let sunset = data.current.sunset;
+                let setdate = new Date(sunset * 1000);
+                let sethours = ((setdate.getHours() + 11) % 12 + 1);
+                let setminutes = setdate.getMinutes();
+                let setmin = ('0'+setminutes).slice(-2);
+                let sunsetTime = sethours + ':' + setmin;
+
+                let suffix6 = risedate.getHours() <= 12 ? "AM":"PM";
+                let suffix7 = setdate.getHours() <= 12 ? "AM":"PM";
+
+                let currentTime = new Date();
+                let currentHours = currentTime.getHours();
+                let suffix = currentHours <= 12 ? "AM":"PM";
+                currentHours = ((currentHours + 11) % 12 + 1);
+                let currentMinutes = currentTime.getMinutes();
+                let currMinutes = ('0'+currentMinutes).slice(-2);
+
+                const weekday = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+                const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+                let today = new Date();
+                let day = today.getDate();
+                let year = today.getFullYear();
+
+                let daylong = weekday[today.getDay()];
+                let monthlong = months[today.getMonth()];
+
+                document.querySelector(".intemp").innerText = Math.round(currentTemp) + "°F";
+                document.querySelector(".inhumidity").innerText = "Humidity: " + currentHum + "%";
+                document.querySelector(".inwind").innerText = "Wind Speed: " + Math.round(currentWind) + " mph";
+                document.querySelector(".indesc").innerText = currentDesc;
+                document.querySelector(".weatherinicon").src = "https://openweathermap.org/img/wn/" + currentIcon + "@2x.png";
+
+                document.querySelector(".sunrise").innerText = sunriseTime + " " + suffix6;
+                document.querySelector(".sunset").innerText = sunsetTime + " " + suffix7;
+
+                document.querySelector(".currTime").innerText = currentHours + ":" + currMinutes + " " + suffix;
+                document.querySelector(".currDate").innerText = daylong + ", " + day + " " + monthlong + " " + year;
+
+                let temp1 = data.hourly[0].temp;
+                let temp2 = data.hourly[1].temp;
+                let temp3 = data.hourly[2].temp;
+                let temp4 = data.hourly[3].temp;
+                let temp5 = data.hourly[4].temp;
+
+                document.querySelector(".day1temp").innerText = Math.round(temp1) + "°F";
+                document.querySelector(".day2temp").innerText = Math.round(temp2) + "°F";
+                document.querySelector(".day3temp").innerText = Math.round(temp3) + "°F";
+                document.querySelector(".day4temp").innerText = Math.round(temp4) + "°F";
+                document.querySelector(".day5temp").innerText = Math.round(temp5) + "°F";
+
+                let icon1  = data.hourly[0].weather[0].icon;
+                let icon2  = data.hourly[1].weather[0].icon;
+                let icon3  = data.hourly[2].weather[0].icon;
+                let icon4  = data.hourly[3].weather[0].icon;
+                let icon5  = data.hourly[4].weather[0].icon;
+
+                document.querySelector(".day1icon").src = "https://openweathermap.org/img/wn/" + icon1 + "@2x.png";
+                document.querySelector(".day2icon").src = "https://openweathermap.org/img/wn/" + icon2 + "@2x.png";
+                document.querySelector(".day3icon").src = "https://openweathermap.org/img/wn/" + icon3 + "@2x.png";
+                document.querySelector(".day4icon").src = "https://openweathermap.org/img/wn/" + icon4 + "@2x.png";
+                document.querySelector(".day5icon").src = "https://openweathermap.org/img/wn/" + icon5 + "@2x.png";
+
+                let time1 = data.hourly[0].dt;
+                let time2 = data.hourly[1].dt;
+                let time3 = data.hourly[2].dt;
+                let time4 = data.hourly[3].dt;
+                let time5 = data.hourly[4].dt;
+
+                let settime1 = new Date(time1 * 1000);
+                let settime2 = new Date(time2 * 1000);
+                let settime3 = new Date(time3 * 1000);
+                let settime4 = new Date(time4 * 1000);
+                let settime5 = new Date(time5 * 1000);
+
+                let sethour1 = ((settime1.getHours() + 11) % 12 + 1);
+                let sethour2 = ((settime2.getHours() + 11) % 12 + 1);
+                let sethour3 = ((settime3.getHours() + 11) % 12 + 1);
+                let sethour4 = ((settime4.getHours() + 11) % 12 + 1);
+                let sethour5 = ((settime5.getHours() + 11) % 12 + 1);
+
+                let suffix1 = settime1.getHours() <= 12 ? "AM":"PM";
+                let suffix2 = settime2.getHours() <= 12 ? "AM":"PM";
+                let suffix3 = settime3.getHours() <= 12 ? "AM":"PM";
+                let suffix4 = settime4.getHours() <= 12 ? "AM":"PM";
+                let suffix5 = settime5.getHours() <= 12 ? "AM":"PM";
+
+                document.querySelector(".day1hour").innerText = sethour1 + " " + suffix1;
+                document.querySelector(".day2hour").innerText = sethour2 + " " + suffix2;
+                document.querySelector(".day3hour").innerText = sethour3 + " " + suffix3;
+                document.querySelector(".day4hour").innerText = sethour4 + " " + suffix4;
+                document.querySelector(".day5hour").innerText = sethour5 + " " + suffix5;
+
+                let myChart = document.getElementById("myChart").getContext("2d");
+
+                let chartStatus = Chart.getChart("myChart");
+                    if (chartStatus != undefined) {
+                        chartStatus.destroy();
+                    }
+
+                let tempChart = new Chart(myChart, {
+                    type: "line",
+                    data: {
+                        labels: ["Now", "Hour 2", "Hour 3", "Hour 4", "Hour 5"],
+                        datasets: [{
+                            label: "Temperature",
+                            data: [temp1, temp2, temp3, temp4, temp5],
+                            backgroundColor: "black",
+                            borderColor: "black",
+                            borderWidth: "2"
+                        }]
+                    },
+                    options: {
+                        maintainAspectRatio: false
+                    }
+                });
+                this.updateChart(tempChart, temp1, temp2, temp3, temp4, temp5);
+            },
+            updateChart: function(tempChart, temp1, temp2, temp3, temp4, temp5) {
+                let data1 = tempChart.data.datasets[0].data = [temp1, temp2, temp3, temp4, temp5];
+                let update = tempChart.update();
+            },
+            displayCity: function() {
+                let city = document.querySelector(".searchbar").value;
+                upper = city.charAt(0).toUpperCase() + city.slice(1);
+                document.querySelector(".weatherin").innerText = "Weather In " + upper;
+                document.querySelector(".forecastname").innerText = upper + "'s " + "Forecast";
+            },
+            displayAsheville: function() {
+                document.querySelector(".weatherin").innerText = "Weather In Asheville";
+                document.querySelector(".forecastname").innerText = "Asheville's Forecast";
+            },
+            displayYork: function() {
+                document.querySelector(".weatherin").innerText = "Weather In New York";
+                document.querySelector(".forecastname").innerText = "New York's Forecast";
+            },
+            displayDubai: function() {
+                document.querySelector(".weatherin").innerText = "Weather In Dubai";
+                document.querySelector(".forecastname").innerText = "Dubai's Forecast";
+            },
+            displayTokyo: function() {
+                document.querySelector(".weatherin").innerText = "Weather In Tokyo";
+                document.querySelector(".forecastname").innerText = "Tokyo's Forecast";
+            },
+            search: function() {
+                this.fetchCoords(document.querySelector(".searchbar").value);
+                this.displayCity();
+            }
+        };
+
+        document.querySelector(".searchbutton").addEventListener("click", function() {
+            main.search();
+        });
+
+        document.querySelector(".searchbar").addEventListener("keyup", function(event) {
+            if (event.key == "Enter") {
+                main.search();
+            }
+        });
+
+        document.querySelector(".newYork").addEventListener("click", function() {
+            main.fetchCoords("New York");
+            main.displayYork();
+        });
+
+        document.querySelector(".dubai").addEventListener("click", function() {
+            main.fetchCoords("dubai");
+            main.displayDubai();
+        });
+
+        document.querySelector(".tokyo").addEventListener("click", function() {
+            main.fetchCoords("Tokyo");
+            main.displayTokyo();
+        });
+
+        </script>
+
+</html>
